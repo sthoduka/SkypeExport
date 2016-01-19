@@ -4,13 +4,13 @@ namespace SkypeParser
 {
 	#include "../resources/css_and_images/style_compact_data_css.h"
 
-	void CSkypeParser::exportUserHistory( const std::string &skypeID, const std::string &targetFile, uint8_t timeFormat, int8_t timeReference )
+	std::string CSkypeParser::getFullHistoryAsXHTML( const std::string &skypeID, uint8_t timeFormat, int8_t timeReference )
 	{
-		std::ofstream xhtmlFileWriter( targetFile.c_str(), std::ios::out ); // NOTE: this is NOT a binary output stream, as we want \n to be translated to the appropriate newlines for the platform, in case the user wants to look at the raw log file in an editor that only supports platform newlines.
-		if( !xhtmlFileWriter ){ throw std::ios::failure( "error opening html file for writing" ); }
+
+		std::stringstream xhtmlOutput( std::stringstream::in | std::stringstream::out ); // holds the xhtml as it's being constructed
 
 		// page header
-		xhtmlFileWriter << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+		xhtmlOutput     << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
 		                << "<html>\n"
 		                << "	<head>\n"
 		                << "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n" // we use utf-8 since that's the encoding used by Skype messages
@@ -23,17 +23,28 @@ namespace SkypeParser
 		                << "	<body>\n";
 
 		// grab the main conversation history for the person
-		xhtmlFileWriter << getHistoryAsXHTML( (void *)skypeID.c_str(), false, timeFormat, timeReference ) << "\n";
+		xhtmlOutput << getHistoryAsXHTML( (void *)skypeID.c_str(), false, timeFormat, timeReference ) << "\n";
 
 		// output all conferences the person took part in (if any)
 		std::vector<int32_t> confs = getConferencesForSkypeID( skypeID );
 		for( size_t i=0, len=confs.size(); i < len; ++i ){
-			xhtmlFileWriter << getHistoryAsXHTML( (void *)&confs[i], true, timeFormat, timeReference ) << "\n";
+			xhtmlOutput << getHistoryAsXHTML( (void *)&confs[i], true, timeFormat, timeReference ) << "\n";
 		}
 
 		// page footer
-		xhtmlFileWriter << "	</body>\n"
+		xhtmlOutput << "	</body>\n"
 		                << "</html>";
+        return xhtmlOutput.str();
+
+	}
+
+	void CSkypeParser::exportUserHistory( const std::string &skypeID, const std::string &targetFile, uint8_t timeFormat, int8_t timeReference )
+	{
+		std::ofstream xhtmlFileWriter( targetFile.c_str(), std::ios::out ); // NOTE: this is NOT a binary output stream, as we want \n to be translated to the appropriate newlines for the platform, in case the user wants to look at the raw log file in an editor that only supports platform newlines.
+		if( !xhtmlFileWriter ){ throw std::ios::failure( "error opening html file for writing" ); }
+
+		// grab the entire conversation history for the person
+		xhtmlFileWriter << getFullHistoryAsXHTML( skypeID, timeFormat, timeReference ) << "\n";
 
 		// any errors?
 		if( !xhtmlFileWriter.good() ){ throw std::ios::failure( "error while writing to html file" ); }
