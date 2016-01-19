@@ -10,19 +10,43 @@ find_package(Boost 1.46 COMPONENTS
     REQUIRED
 )
 
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5WebKitWidgets)
+
+set(qt_UI
+  "../../resources/ui/skype_export.ui"
+)
+QT5_WRAP_UI(qt_UI_H ${qt_UI})
+
+set(qt_H
+  "release/ui_skype_export.h")
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE AUTOUIC ON)
+QT5_WRAP_CPP(qt_H_MOC ${qt_H})
+QT5_WRAP_UI(qt_UI_H ${qt_UI})
+
 add_executable(SkypeExport
-    ../../main.cpp
+    ../../main_qt.cpp
     ../../libs/sqlite3/sqlite3.c
     ../../model/skypeparser_core.cpp
     ../../model/skypeparser_parsing.cpp
+    ../../resources/ui/skype_export_window.cpp
+    ../../resources/ui/skype_export_window.h
+    ${qt_UI_H}
 )
 
 include_directories(SkypeExport
     ${Boost_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+    ${Qt5WebKitWidgets_INCLUDE_DIRS}
 )
 
 target_link_libraries(SkypeExport
     ${Boost_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5WebKitWidgets_LIBRARIES}
 )
 
 # disable sqlite3 threading and dynamic extension loader to avoid pthreads/dl dependencies
