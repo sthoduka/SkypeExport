@@ -71,6 +71,9 @@ namespace SkypeParser
 		std::string getFullHistoryAsXHTML( const std::string &skypeID, uint8_t timeFormat, int8_t timeReference );
 		std::string getHistoryAsXHTML( void *searchValue, bool isConference, uint8_t timeFormat, int8_t timeReference );
 	};
+
+    bool isForbiddenCharacter( char c );
+    std::string makeSafeFilename( const std::string &input, char replacement );
 }
 
 #endif

@@ -1,23 +1,23 @@
 #include "model/skypeparser.h"
+#include "view/skype_export_window.h"
+
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 #include <iostream>
 
-bool isForbiddenCharacter( char c )
-{
-	static std::string forbiddenChars( "\\/:?\"<>|*" );
-	return ( std::string::npos != forbiddenChars.find( c ) );
-}
-
-std::string makeSafeFilename( const std::string &input, char replacement )
-{
-	std::string result = input;
-	std::replace_if( result.begin(), result.end(), isForbiddenCharacter, replacement );
-	return result;
-}
+#include <QApplication>
 
 int main( int argc, char **argv )
 {
+    if (argc < 2)
+    {
+        QApplication a(argc, argv);
+        SkypeExportWindow w;
+        w.show();
+
+        return a.exec();
+    }
+
 	std::cout << "Skype History Exporter v1.4.0 Stable\n"
 	          << "   WEBSITE: [ https://github.com/Temptin/SkypeExport ]\n"; // helps people find updated versions
 
@@ -128,7 +128,7 @@ int main( int argc, char **argv )
 
 			// construct the final path to the log file for this user
 			fs::path logPath( outPath );
-			std::string safeFilename = makeSafeFilename( (*it), '$' ); // replace illegal characters with $ instead; some skype IDs are "live:username", and will become "live$username"
+			std::string safeFilename = SkypeParser::makeSafeFilename( (*it), '$' ); // replace illegal characters with $ instead; some skype IDs are "live:username", and will become "live$username"
 			logPath /= ( safeFilename + ".skypelog.htm" ); // appends the log filename and chooses the appropriate path separator
 
 			// output exporting header

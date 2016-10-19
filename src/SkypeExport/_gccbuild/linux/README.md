@@ -5,6 +5,8 @@ Building on Linux is very easy. Just make sure you have the following packages i
     make
     cmake
     boost 1.46 (or later)
+    qt5-default
+    libqt5webkit5-dev
 
 For example, on Ubuntu, you can run:
 
